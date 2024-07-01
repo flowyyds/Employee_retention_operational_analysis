@@ -1,0 +1,24 @@
+All Employees = DISTINCTCOUNT(ppl_fact[employee_id])
+
+Average # of Employees = ([starting headcount]+[Headcount])/2
+
+
+departed employees = CALCULATE([All Employees],FILTER(ppl_fact,ppl_fact[term_date]>=FIRSTDATE('Date'[Date]) && ppl_fact[term_date]<=LASTDATE('Date'[Date])))
+
+Ending Headcount = CALCULATE([All Employees], FILTER(ppl_fact,ppl_fact[hire_date]<FIRSTDATE('Date'[Date])&& (ppl_fact[term_date]=BLANK()||ppl_fact[term_date]>=LASTDATE('Date'[Date]))))
+
+Headcount = CALCULATE([All Employees],FILTER(ppl_fact,ppl_fact[hire_date]<=LASTDATE('Date'[Date]) && (ppl_fact[term_date]>=LASTDATE('Date'[Date]) || ppl_fact[term_date]=BLANK())))
+
+
+MIN MAX retention = SWITCH(TRUE(),
+                    SELECTEDVALUE('Date'[Year])=CALCULATE(MIN('Date'[Year]),ALLSELECTED('Date')),[retention],
+                    SELECTEDVALUE('Date'[Year])=CALCULATE(MAX('Date'[Year]),ALLSELECTED('Date')),[retention],
+                    BLANK())
+
+
+retention = DIVIDE([Ending Headcount],[starting headcount])
+
+starting headcount = CALCULATE([All Employees],FILTER(ppl_fact,ppl_fact[hire_date]<FIRSTDATE('Date'[Date]) && (ppl_fact[term_date]=BLANK() || ppl_fact[term_date]>FIRSTDATE('Date'[Date]))))
+
+Turnover rate = DIVIDE([departed employees],[Average # of Employees])
+
